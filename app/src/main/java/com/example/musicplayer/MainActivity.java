@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<String> arrayList;
 
     ListView listview;
-    //hello
+    //hello alo 1234
     ArrayAdapter<String> arrayAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
