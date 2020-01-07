@@ -18,6 +18,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -45,10 +46,28 @@ public class MusicScreen extends AppCompatActivity {
         setContentView(R.layout.layoutmusic);
         //Intent caller = getIntent();
         //String prevActivity = caller.getExtras().getString("callingActivity");
+        final ImageView  playButton = (ImageView)findViewById(R.id.PlayButton);
+        playButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (playButton.getDrawable().getConstantState() == getResources().getDrawable(R.drawable.play).getConstantState()) {
 
+                    //playButton.setImageResource(R.drawable.play2);
+                    playButton.setImageResource(R.drawable.pause);
+
+                }
+                else if (playButton.getDrawable().getConstantState() == getResources().getDrawable(R.drawable.pause).getConstantState()){
+                    //playButton.setImageResource(R.drawable.pause2);
+                    Pause();
+
+                    playButton.setImageResource(R.drawable.play);
+
+                }
+            }
+        });
         AskPermission();
-        Load();
-        Play();
+        //Load();
+        //Play();
 
 
     }
@@ -134,11 +153,6 @@ public class MusicScreen extends AppCompatActivity {
 
     public void Load() {
         //int Songs[] = new int[2];
-        Songs[0] = R.raw.uprising;
-        Songs[1] = R.raw.wonderful_tonight;
-        Songs[2] = R.raw.dont_speak;
-        Songs[3] = R.raw.thriller;
-        Songs[4] = R.raw.yeah_yeah;
         //RecordTrackInfo();
 
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -152,10 +166,19 @@ public class MusicScreen extends AppCompatActivity {
         //String SongUri[] = new String[2];
         //SongUri[0] = "android.resource://"+getPackageName()+"/"+R.raw.uprising;
         //SongUri[1] = "android.resource://"+getPackageName()+"/"+R.raw.wonderful_tonight;
-        if (RepeatFlag)
+        try
+        {
+            mediaPlayer.setDataSource(jukebox.getCurrentTrack().GetFilepath());
+            System.out.println(jukebox.getCurrentTrack().GetFilepath());
+            mediaPlayer.prepareAsync();
+        }catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        /*if (RepeatFlag)
             mediaPlayer.setLooping(true);
         else
-            mediaPlayer.setLooping(false);
+            mediaPlayer.setLooping(false);*/
         mediaPlayer.start();
         TrackInfoUpdate();
     }

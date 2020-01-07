@@ -75,6 +75,10 @@ public class JukeboxTrack {
         duration = d;
     }
 
+    public String TrackView()
+    {
+        return (name+"\nArtist: "+artist+"\nDuration: "+duration+"\nAlbum: "+album);
+    }
 
 
 }

@@ -26,12 +26,17 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import org.xmlpull.v1.XmlPullParser;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+
+import static java.lang.String.format;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<String> arrayList;
 
     ListView listview;
-    //hello alo 1234 45678
+    //hello
     ArrayAdapter<String> arrayAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,15 +63,16 @@ public class MainActivity extends AppCompatActivity {
         }
         else
         {
-            songListed();
+            FileListed();
         }
 
     }
 
-    public void songListed() {
+    public void FileListed() {
         listview = (ListView) findViewById(R.id.listView);
         arrayList = new ArrayList<>();
         GetMusic();
+        GetVideo();
         arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, arrayList);
         listview.setAdapter(arrayAdapter);
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -83,11 +89,34 @@ public class MainActivity extends AppCompatActivity {
         if(songCursor != null && songCursor.moveToFirst()){
             int songName = songCursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME);
             int songArtist = songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+            int Duration = songCursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
+            int songAlbum = songCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM);
             do{
                 String currentTitle = songCursor.getString(songName);
                 String currentArtist = songCursor.getString(songArtist);
-                arrayList.add(currentTitle + "\n" + "Artist: " + currentArtist);
+                int temp = songCursor.getInt(Duration);
+                String currentDuration = ConvertDurationMusic(temp);
+                String currentAlbum = songCursor.getString(songAlbum);
+                arrayList.add(currentTitle + "\nArtist: " + currentArtist + "\nDuration: " + currentDuration + "\nAlbum: "+ currentAlbum);
             }while(songCursor.moveToNext());
+        }
+    }
+
+    public void GetVideo(){
+        ContentResolver contentResolver = getContentResolver();
+        Uri videoUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+        Cursor videoCursor = contentResolver.query(videoUri, null, null, null, null);
+        if(videoCursor != null && videoCursor.moveToFirst()){
+            int videoName = videoCursor.getColumnIndex(MediaStore.Video.Media.TITLE);
+            int videoDirector = videoCursor.getColumnIndex(MediaStore.Video.Media.ARTIST);
+            int Duration = videoCursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
+            do{
+                String currentTitle = videoCursor.getString(videoName);
+                String currentDirector = videoCursor.getString(videoDirector);
+                int temp = videoCursor.getInt(Duration);
+                String currentDuration = ConvertDurationVideo(temp);
+                arrayList.add(currentTitle + "\nDirector: " + currentDirector + "\nDuration: "+ currentDuration);
+            }while(videoCursor.moveToNext());
         }
     }
 
@@ -98,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                         Toast.makeText(this, "Permission Granted!!", Toast.LENGTH_SHORT).show();
-                        songListed();
+                        FileListed();
                     }
                 }
                 else
@@ -133,4 +162,37 @@ public class MainActivity extends AppCompatActivity {
         });
         return super.onCreateOptionsMenu(menu);
     }
+
+    public String ConvertDurationMusic(int duration)
+    {
+        String result = "";
+        int mns = (duration / 60000) % 60000;
+        int scs = duration % 60000 / 1000;
+        if(mns > 0 && scs > 0 && scs < 10)
+            result =  mns +":0"+scs;
+        else if(mns > 0 && mns < 10)
+            result = mns +":"+scs;
+        return result;
+    }
+    public String ConvertDurationVideo(int duration)
+    {
+        String result = "";
+        int hrs = duration / 360000;
+        int mns = (duration / 60000) % 60000;
+        int scs = duration % 60000 / 1000;
+        if(hrs > 0 && mns > 0 && mns < 10 && scs > 0 && scs < 10)
+            result=hrs+":0"+mns+":0"+scs;
+        else if(hrs > 0 && mns >= 10 && scs > 0 && scs < 10)
+            result =  hrs + ":" + mns +":0" + scs;
+        else if(hrs > 0 && mns >= 10 && scs >= 10)
+            result =  hrs + ":" + mns +":" + scs;
+        else if(hrs == 0 && mns > 0 && mns < 10 && scs > 0 && scs < 10)
+            result = "00:0" + mns +":0" + scs;
+        else if(hrs == 0 && mns >= 10 && scs > 0 && scs < 10)
+            result = "00:" + mns + ":0" + scs;
+        else if(hrs == 0 && mns >= 10 && scs >= 10)
+            result = "00:" + mns + ":" + scs;
+        return result;
+    }
 }
+
